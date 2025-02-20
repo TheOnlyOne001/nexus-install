@@ -1,4 +1,3 @@
-#!/bin/bash
 
 # Update System
 sudo apt update && sudo apt upgrade -y
@@ -13,8 +12,6 @@ source "$HOME/.cargo/env"
 # Add Rust target
 rustup target add riscv32i-unknown-none-elf
 
-# Install Nexus CLI
-curl https://cli.nexus.xyz/ | sh
 
 # Set OpenSSL Environment Variables
 echo 'export OPENSSL_DIR=/usr' >> ~/.bashrc
@@ -27,5 +24,11 @@ source ~/.bashrc
 cargo --version
 protoc --version
 nexus --version
+
+# Memmory Dag
+curl -O https://gist.githubusercontent.com/NodeFarmer/013a495f61761903b1378a64cbe64810/raw/2524770f735e2c292d30e02c11f5447b052f63ad/nexus_swap.sh && chmod +x nexus_swap.sh && ./nexus_swap.sh
+
+# Install Nexus CLI
+curl https://cli.nexus.xyz/ | sh
 
 echo "Installation completed!"
