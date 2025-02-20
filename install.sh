@@ -1,34 +1,41 @@
+#!/bin/bash
 
 # Update System
 sudo apt update && sudo apt upgrade -y
 
 # Install dependencies
-sudo apt install git curl pkg-config libssl-dev protobuf-compiler -y
+sudo apt install -y git curl pkg-config libssl-dev protobuf-compiler screen
 
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source "$HOME/.cargo/env"
+# Start a new screen session and run the installation inside it
+screen -dmS nexus_install bash -c '
+    # Install Rust
+    curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
 
-# Add Rust target
-rustup target add riscv32i-unknown-none-elf
+    # Add Rust target
+    rustup target add riscv32i-unknown-none-elf
 
+    # Set OpenSSL Environment Variables
+    echo "export OPENSSL_DIR=/usr" >> ~/.bashrc
+    echo "export OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu" >> ~/.bashrc
+    echo "export OPENSSL_INCLUDE_DIR=/usr/include/openssl" >> ~/.bashrc
+    echo "export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> ~/.bashrc
+    source ~/.bashrc
 
-# Set OpenSSL Environment Variables
-echo 'export OPENSSL_DIR=/usr' >> ~/.bashrc
-echo 'export OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu' >> ~/.bashrc
-echo 'export OPENSSL_INCLUDE_DIR=/usr/include/openssl' >> ~/.bashrc
-echo 'export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig' >> ~/.bashrc
-source ~/.bashrc
+    # Confirm installation
+    cargo --version
+    protoc --version
+    nexus --version
 
-# Confirm installation
-cargo --version
-protoc --version
-nexus --version
+    # Memory DAG
+    curl -O https://gist.githubusercontent.com/NodeFarmer/013a495f61761903b1378
 
-# Memmory Dag
-curl -O https://gist.githubusercontent.com/NodeFarmer/013a495f61761903b1378a64cbe64810/raw/2524770f735e2c292d30e02c11f5447b052f63ad/nexus_swap.sh && chmod +x nexus_swap.sh && ./nexus_swap.sh
+    # Install Nexus CLI
+    curl https://cli.nexus.xyz/ | sh
 
-# Install Nexus CLI
-curl https://cli.nexus.xyz/ | sh
+    # Start Nexus CLI and automatically enter options
+    echo -e "1\n6684878" | nexus
+'
 
-echo "Installation completed!"
+echo "Nexus installation and execution are running in a screen session."
+echo "To check progress, run: screen -r nexus_install"
